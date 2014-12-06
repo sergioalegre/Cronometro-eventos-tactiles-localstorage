@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+	<meta charset="UTF-8">
+	<title>Cronometro-tactil-json-localstorage</title>
+	<script type="text/javascript" src="zepto.min.js" ></script>
+	<script type="text/javascript" src="touch.js" ></script>
+
+	<script type="text/javascript">
+
+		var encendido=false; //controla si esta enciendido o apagado
+
+		var intervalo=null;
+
+		$( document ).ready(function() {	//es como el 'onload'
+
+			localStorage.varAlmLocal = (localStorage.varAlmLocal || ""); 	//creo una variable de almacenamiento local para almacenar la lista de veces que para el cronometro
+			localStorage.visitas = (localStorage.visitas || "");
+
+			localStorage.visitas++;	//incremento el número de visitas a la página
+			$("#numero_de_visitas").html(localStorage.visitas); //asigno al id numero_de_visitas el valor visitas almacenado en el localstorage
+
+
+			$("body").on('swipeRight', fcambiar);	//si hago tap llamo a fcambiar
+			$("body").on('swipeLeft', finicializar);	//si hago swipe llamo a finicializar
+
+			$("#cambiar").on('click', fcambiar);
+			$("#inicializar").on('click', finicializar);
+			
+			$("#ver_valor").on('click', fver_valor);
+
+
+		});
+
+		function finicializar () {
+			if(encendido===false){  //si esta apagado puedo inicializarlo
+				$("#tiempo").html("0.0");
+				$("#lista").empty();    //vacio la lista
+				localStorage.clear("varAlmLocal"); //vacia del localstorage la variable varAlmLocal
+			}
+			else{	//si esta encendido no quiero inicializarlo
+				document.alert("Esta encendido asi que no puedo inicializarlo");
+			};
+		};
+
+		function fcambiar () {		//cambia el estado del cronometro de encendido a parado y viceversa
+			if(encendido===false) { //si esta apagado, lo encendemos
+				encendido=true;
+				intervalo=setInterval( fincrementartiempo, 100);
+			}
+			else { 	//si esta encendido, lo paramos
+				encendido=false;
+				clearInterval(intervalo); 	//para que se deje de llamar a fincrementartiempo
+
+				localStorage.setItem("varAlmLocal", localStorage.getItem("varAlmLocal") + " y en " + $("#tiempo").html() );	//almaceno en una variable local los momentos en que se paro
+				//localStorage.setItem(variable, valor a guardar en variable). En este caso al ser una lista de momentos varAlmLocal = varAlmLocal + tiempo nuevo. Para no perder la lista de momentos que paro
+
+				$("#lista").append("Se paro en " + $("#tiempo").html() + "<br>"); 	//relleno la lista de momentos en que se paro les separo con <br> y no pierdo los anteriores con append
+			};
+		};
+
+		function fincrementartiempo () { //el valor actual de tiempo le sumo 0,1 y le pongo un decimal
+			$("#tiempo").html((+$("#tiempo").html()+ 0.1).toFixed(1)); // le pongo +$("#tiempo").html() para convertir $("#tiempo").html() a numero
+		};
+
+		function fver_valor (){
+			if ((localStorage.length) < 1)
+			{
+				alert("El cronometro aun no se ha encendido nunca, asi que no tengo nada almacenado");
+			}
+			else
+			{
+				alert("El cronometro se paro en: "+localStorage.getItem("varAlmLocal"));
+			}
+		};
+
+	</script>
+
+</head>
+<body>
+
+	<h2>Cronometro con botones y controles táctiles<br>
+	Se ha de visualizar con 'Vista de diseño adaptable Ctrl+Mayus+M'</h2>
+	<h3>Utiliza swipeRight para Arrancar/Parar y swipeLeft para Inicializar</h3>
+
+	<div>Se ha visitado esta página <span id="numero_de_visitas"></span> veces</div>
+
+	<div style="background-image:url(crono.png); width:200px; height:298px;">
+		<div style="padding: 111px 40px 80px; font-size: 42px; font-weight: bold; text-align: center;" id="tiempo">0.0</div>
+	</div>
+
+	<button id="cambiar">Arrancar / Parar</button>
+	<button id="inicializar">Inicializar</button>
+	<br><br>
+	<button id="ver_valor">Ven en que momentos se paro </button> <!-- Ver valor de localStorage.varAlmLocal -->
+	<div id="lista"></div>
+
+</body>
+</html>
